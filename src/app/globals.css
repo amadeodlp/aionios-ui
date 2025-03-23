@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 0, 0, 0;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  overflow-x: hidden;
+}
+
+@layer components {
+  .galaxy-orbit {
+    @apply relative rounded-full border border-foreground/20 flex items-center justify-center;
+  }
+  
+  .galaxy-center {
+    @apply absolute w-4 h-4 rounded-full bg-foreground;
+  }
+  
+  .btn {
+    @apply px-4 py-2 border border-foreground/50 rounded hover:bg-foreground/5 transition-colors;
+  }
+  
+  .btn--primary {
+    @apply bg-foreground text-background hover:bg-foreground/90;
+  }
+  
+  /* New styles for orbital elements */
+  .orbital-element {
+    @apply absolute rounded-full bg-foreground/30 transition-all duration-300;
+  }
+  
+  .orbital-element--active {
+    @apply bg-foreground scale-125 shadow-glow;
+  }
+  
+  .shadow-glow {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Testimonial styles */
+  .testimonial-orbit {
+    @apply absolute rounded-full border border-foreground/10;
+    animation: orbit 60s linear infinite;
+  }
+  
+  @keyframes orbit {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  
+  /* Custom animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.6;
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+  
+  /* Timeline styles for About page */
+  .timeline-connector {
+    @apply absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-foreground/20;
+  }
+  
+  .timeline-node {
+    @apply relative z-10 flex items-center justify-center w-16 h-16 rounded-full bg-background border-2 border-foreground/30;
+  }
+  
+  .timeline-card {
+    @apply flex-1 bg-background/10 backdrop-blur-sm border border-foreground/20 rounded-lg p-6 shadow-lg transition-all duration-300;
+  }
+  
+  .timeline-card:hover {
+    @apply border-foreground/40 shadow-xl;
+    transform: translateY(-5px);
+  }
+}
