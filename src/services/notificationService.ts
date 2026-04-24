@@ -10,7 +10,8 @@ export enum NotificationType {
   CAPSULE_OPENED     = 'CAPSULE_OPENED',
 }
 
-const noop = async () => ({ success: true });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const noop = async (..._args: unknown[]) => ({ success: true });
 
 export const sendInvitations           = noop;
 export const notifyCapsuleReady        = noop;
