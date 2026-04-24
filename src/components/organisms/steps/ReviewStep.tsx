@@ -4,37 +4,37 @@ import {
     FiUser,
     FiUsers,
     FiFile,
-    FiLink,
     FiCalendar,
     FiDollarSign,
-    FiMail,
     FiImage,
     FiFileText,
     FiGlobe,
-    FiCheck,
+    FiLink,
     FiLock,
     FiChevronRight,
     FiEye
 } from 'react-icons/fi';
 import { format } from 'date-fns';
+import { ReviewStepProps } from '@/types/capsule';
 
 const ReviewStep = ({
     formData,
     handleSubmit,
     isSubmitting,
     errors
-}) => {
+}: ReviewStepProps) => {
     // Format date for display
-    const formatDate = (date) => {
+    const formatDate = (date: unknown): string => {
         if (!date) return 'Not set';
-        return format(new Date(date), 'MMMM d, yyyy h:mm aa');
+        return format(new Date(date as string | number | Date), 'MMMM d, yyyy h:mm aa');
     };
 
     // Format file size
-    const formatFileSize = (bytes) => {
-        if (bytes < 1024) return bytes + ' bytes';
-        else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-        else return (bytes / 1048576).toFixed(1) + ' MB';
+    const formatFileSize = (bytes: unknown): string => {
+        const bytesNum = bytes as number;
+        if (bytesNum < 1024) return bytesNum + ' bytes';
+        else if (bytesNum < 1048576) return (bytesNum / 1024).toFixed(1) + ' KB';
+        else return (bytesNum / 1048576).toFixed(1) + ' MB';
     };
 
     // Get condition type display text

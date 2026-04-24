@@ -1,4 +1,4 @@
-import { ethers, formatEther, parseEther } from 'ethers';
+import { ethers, formatEther, parseEther, BrowserProvider, Contract } from 'ethers';
 import { CONTRACT_ADDRESSES } from '@/web3/config';
 import TimeCapsuleABI from '@/web3/abis/TimeCapsule.json';
 
@@ -33,11 +33,11 @@ export interface TransactionResult {
  * @param provider - Web3 provider
  * @returns TimeCapsule contract instance
  */
-export const getTimeCapsuleContract = (provider: ethers.providers.Web3Provider | null): ethers.Contract | null => {
+export const getTimeCapsuleContract = (provider: BrowserProvider | null): Contract | null => {
     if (!provider) return null;
 
     const signer = provider.getSigner();
-    return new ethers.Contract(
+    return new Contract(
         CONTRACT_ADDRESSES.AIONIOS_CAPSULE,
         TimeCapsuleABI,
         signer
@@ -52,7 +52,7 @@ export const getTimeCapsuleContract = (provider: ethers.providers.Web3Provider |
  */
 export const createCapsuleOnChain = async (
     capsuleData: CapsuleData,
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<CapsuleData & { id: number; txHash: string; blockNumber: number }> => {
     const contract = getTimeCapsuleContract(provider);
     if (!contract) throw new Error('Contract not initialized');
@@ -95,7 +95,7 @@ export const createCapsuleOnChain = async (
  */
 export const createMultiSigCapsuleOnChain = async (
     capsuleData: CapsuleData,
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<CapsuleData & { id: number; txHash: string; blockNumber: number }> => {
     const contract = getTimeCapsuleContract(provider);
     if (!contract) throw new Error('Contract not initialized');
@@ -140,7 +140,7 @@ export const createMultiSigCapsuleOnChain = async (
 export const addCryptoAssets = async (
     capsuleId: number,
     assets: Asset[],
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<TransactionResult[]> => {
     const contract = getTimeCapsuleContract(provider);
     if (!contract) throw new Error('Contract not initialized');
@@ -220,7 +220,7 @@ export const addCryptoAssets = async (
  */
 export const openCapsule = async (
     capsuleId: number,
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<{ txHash: string; status: number; capsuleId: number }> => {
     const contract = getTimeCapsuleContract(provider);
     if (!contract) throw new Error('Contract not initialized');
@@ -243,7 +243,7 @@ export const openCapsule = async (
  */
 export const approveOpening = async (
     capsuleId: number,
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<{ txHash: string; status: number; capsuleId: number }> => {
     const contract = getTimeCapsuleContract(provider);
     if (!contract) throw new Error('Contract not initialized');
@@ -266,7 +266,7 @@ export const approveOpening = async (
  */
 export const isReadyToOpen = async (
     capsuleId: number,
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<boolean> => {
     const contract = getTimeCapsuleContract(provider);
     if (!contract) throw new Error('Contract not initialized');
@@ -282,7 +282,7 @@ export const isReadyToOpen = async (
  */
 export const getCapsuleInfo = async (
     capsuleId: number,
-    provider: ethers.providers.Web3Provider
+    provider: BrowserProvider
 ): Promise<{
     id: number;
     title: string;

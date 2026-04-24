@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiFile, FiLink, FiUpload, FiX, FiDollarSign, FiImage, FiFileText, FiGlobe, FiClock, FiLayers, FiLock } from 'react-icons/fi';
+import { FiFile, FiUpload, FiX, FiDollarSign, FiImage, FiFileText, FiGlobe, FiLock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ethers, formatEther, parseEther, Interface } from 'ethers';
 import { metaMask, metaMaskHooks } from '@/web3/connectors';
 import { CONTRACT_ADDRESSES } from '@/web3/config';
-import TimeCapsuleABI from '@/web3/abis/TimeCapsule.json'; // You'll need to create this ABI file
+import { ContentStepProps } from '@/types/capsule';
 
-const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider } = metaMaskHooks;
+const { useAccounts, useIsActive, useProvider } = metaMaskHooks;
 
 const ContentsStep = ({
     formData,
@@ -17,10 +17,8 @@ const ContentsStep = ({
     removeUrl,
     addCryptoAsset,
     removeCryptoAsset,
-    active,
-    account,
     errors
-}) => {
+}: ContentStepProps) => {
     const [newUrl, setNewUrl] = useState({ title: '', url: '' });
     const [newCryptoAsset, setNewCryptoAsset] = useState({
         type: 'ETH',
@@ -33,9 +31,7 @@ const ContentsStep = ({
     const [isWalletConnecting, setIsWalletConnecting] = useState(false);
 
     const fileInputRef = useRef(null);
-    const chainId = useChainId();
     const accounts = useAccounts();
-    const isActivating = useIsActivating();
     const isActive = useIsActive();
     const provider = useProvider();
 
@@ -70,7 +66,7 @@ const ContentsStep = ({
         }
     };
 
-    const handleUrlAdd = (e) => {
+    const handleUrlAdd = (e: React.FormEvent) => {
         e.preventDefault();
         if (newUrl.url && newUrl.title) {
             addUrl(newUrl);
@@ -78,7 +74,7 @@ const ContentsStep = ({
         }
     };
 
-    const handleCryptoAdd = async (e) => {
+    const handleCryptoAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newCryptoAsset.amount > 0 && isActive) {
             try {
@@ -165,14 +161,14 @@ const ContentsStep = ({
         }
     };
 
-    const handleFileUpload = (e) => {
-        const files = Array.from(e.target.files);
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
         files.forEach(file => {
             addFile(file);
         });
     };
 
-    const handleDrop = (e) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         const files = Array.from(e.dataTransfer.files);
         files.forEach(file => {
@@ -180,13 +176,14 @@ const ContentsStep = ({
         });
     };
 
-    const handleDragOver = (e) => {
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
     };
 
     // File type icons
-    const getFileIcon = (file) => {
-        const type = file.type.split('/')[0];
+    const getFileIcon = (file: unknown) => {
+        const fileObj = file as { type: string };
+        const type = fileObj.type.split('/')[0];
 
         switch (type) {
             case 'image':
@@ -203,7 +200,7 @@ const ContentsStep = ({
     };
 
     // Format file size
-    const formatFileSize = (bytes) => {
+    const formatFileSize = (bytes: number) => {
         if (bytes < 1024) return bytes + ' bytes';
         else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
         else return (bytes / 1048576).toFixed(1) + ' MB';

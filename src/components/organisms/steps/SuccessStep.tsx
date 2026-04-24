@@ -6,15 +6,14 @@ import {
     FiShare2,
     FiCalendar,
     FiUsers,
-    FiLink,
     FiDownload,
     FiArrowRight,
-    FiGift,
-    FiMail
+    FiGift
 } from 'react-icons/fi';
 import { format } from 'date-fns';
+import { SuccessStepProps } from '@/types/capsule';
 
-const SuccessStep = ({ formData }) => {
+const SuccessStep = ({ formData }: SuccessStepProps) => {
     const [copiedLink, setCopiedLink] = useState(false);
     const [copiedId, setCopiedId] = useState(false);
 
@@ -27,13 +26,13 @@ const SuccessStep = ({ formData }) => {
     };
 
     // Format date for display
-    const formatDate = (date) => {
+    const formatDate = (date: unknown): string => {
         if (!date) return 'Not set';
-        return format(new Date(date), 'MMMM d, yyyy h:mm aa');
+        return format(new Date(date as string | number | Date), 'MMMM d, yyyy h:mm aa');
     };
 
     // Handle copy to clipboard
-    const handleCopy = (text, type) => {
+    const handleCopy = (text: string, type: string) => {
         navigator.clipboard.writeText(text)
             .then(() => {
                 if (type === 'link') {

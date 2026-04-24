@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { FiCalendar, FiUsers, FiLink, FiPlus, FiX, FiMail, FiUser, FiGift, FiClock, FiLayers } from 'react-icons/fi';
+import { FiCalendar, FiUsers, FiPlus, FiX, FiUser, FiGift, FiClock, FiLink, FiLayers } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { ConditionsStepProps } from '@/types/capsule';
 
 const ConditionsStep = ({
     formData,
@@ -11,13 +12,13 @@ const ConditionsStep = ({
     addWitness,
     removeWitness,
     errors
-}) => {
+}: ConditionsStepProps) => {
     const [newWitness, setNewWitness] = useState({
         name: '',
         email: ''
     });
 
-    const handleAddWitness = (e) => {
+    const handleAddWitness = (e: React.FormEvent) => {
         e.preventDefault();
         addWitness(newWitness);
         setNewWitness({ name: '', email: '' });

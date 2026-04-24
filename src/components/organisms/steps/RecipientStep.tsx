@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { FiPlus, FiX, FiMail, FiUser, FiEye, FiEyeOff } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { RecipientStepProps } from '@/types/capsule';
 
-const RecipientStep = ({ formData, handleChange, addRecipient, removeRecipient, errors }) => {
+const RecipientStep = ({ formData, handleChange, addRecipient, removeRecipient, errors }: RecipientStepProps) => {
     const [newRecipient, setNewRecipient] = useState({
         name: '',
         email: '',
         relationship: ''
     });
 
-    const handleAddRecipient = (e) => {
+    const handleAddRecipient = (e: React.FormEvent) => {
         e.preventDefault();
         addRecipient(newRecipient);
         setNewRecipient({ name: '', email: '', relationship: '' });
