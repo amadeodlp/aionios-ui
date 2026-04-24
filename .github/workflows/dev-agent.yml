@@ -36,8 +36,8 @@ jobs:
 
       - name: Configure git
         run: |
-          git config --global user.email "dev-agent@amadeodlp.lat"
-          git config --global user.name "Dev Agent"
+          git config --global user.email "amadeodlp@hotmail.com"
+          git config --global user.name "Amadeo de la Peña"
 
       - name: Run dev agent
         run: node _infra/dev-agent.js
