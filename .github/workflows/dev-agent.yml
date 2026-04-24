@@ -2,7 +2,7 @@ name: Dev Agent
 
 on:
   schedule:
-    - cron: '0 12 * * 1-5'  # lunes a viernes, 12pm UTC (9am ARG)
+    - cron: '0 12 * * 2,5'  # 12pm UTC = 9am ARG
   workflow_dispatch:
 
 jobs:
