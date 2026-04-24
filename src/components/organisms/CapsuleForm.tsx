@@ -227,7 +227,9 @@ const CapsuleForm = () => {
             };
 
             // Upload the content object to IPFS to get a single hash
-            const contentHash = await uploadJSONToIPFS(contentObj);
+            const contentBlob = new Blob([JSON.stringify(contentObj)], { type: 'application/json' });
+            const contentFile = new File([contentBlob], 'content.json', { type: 'application/json' });
+            const contentHash = await uploadToIPFS(contentFile);
 
             // Determine which contract function to call based on condition type
             let capsuleId;
