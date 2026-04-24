@@ -41,9 +41,9 @@ jobs:
           git config --global user.name "Dev Agent"
 
       - name: Run dev agent
-        run: node dev-agent.js
-        working-directory: _infra
+        run: node ${{ github.workspace }}/_infra/dev-agent.js
         env:
+          NODE_PATH: ${{ github.workspace }}/_infra/node_modules
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           AGENT_REPO_PATH: ${{ github.workspace }}
