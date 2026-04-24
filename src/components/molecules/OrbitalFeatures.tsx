@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 type FeatureProps = {
   title: string;
@@ -45,8 +44,6 @@ const Feature = ({ title, description, icon, angle, distance }: FeatureProps) =>
 };
 
 const OrbitalFeatures = () => {
-  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
-  
   // Features data
   const features = [
     {

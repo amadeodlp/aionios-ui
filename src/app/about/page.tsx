@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { motion, useInView, useAnimation } from 'framer-motion';
-import Image from 'next/image';
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import AnimatedStars from '@/components/atoms/AnimatedStars';

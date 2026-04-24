@@ -6,7 +6,7 @@ import { Capsule } from '@/store/slices/capsuleSlice';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
-import { getCapsule, incrementViewCount, getIPFSUrl } from '@/services/capsuleService';
+import { getCapsule, incrementViewCount } from '@/services/capsuleService';
 import { CONTRACT_ADDRESSES } from '@/web3/config';
 import { useDispatch } from 'react-redux';
 import { openModal } from '@/store/slices/uiSlice';
@@ -248,24 +248,24 @@ export default function CapsuleBlockchainInfoPage() {
                   <h3 className="text-sm font-medium text-foreground/60 mb-3">Actions</h3>
                   
                   <div className="flex flex-wrap gap-3">
-                    <Button 
+                    <Button
                       variant="secondary"
                       size="sm"
                       href={`https://etherscan.io/tx/${blockchainData.creationTransaction}`}
-                      onClick={(e) => {
-                        e.preventDefault();
+                      onClick={(e?: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+                        e?.preventDefault();
                         window.open(`https://etherscan.io/tx/${blockchainData.creationTransaction}`, '_blank');
                       }}
                     >
                       View on Etherscan
                     </Button>
                     
-                    <Button 
+                    <Button
                       variant="secondary"
                       size="sm"
                       href={`https://etherscan.io/address/${blockchainData.contractAddress}`}
-                      onClick={(e) => {
-                        e.preventDefault();
+                      onClick={(e?: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+                        e?.preventDefault();
                         window.open(`https://etherscan.io/address/${blockchainData.contractAddress}`, '_blank');
                       }}
                     >

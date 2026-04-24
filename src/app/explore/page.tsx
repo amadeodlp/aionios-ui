@@ -18,7 +18,7 @@ import {
 } from '@/services/capsuleService';
 
 export default function ExplorePage() {
-  const { capsules, exploreCapsules, exploreLoading, exploreError } = useSelector((state: RootState) => state.capsule);
+  const { exploreCapsules, exploreError } = useSelector((state: RootState) => state.capsule);
   const dispatch = useDispatch();
   const [filter, setFilter] = useState('all');
   const [category, setCategory] = useState('featured');

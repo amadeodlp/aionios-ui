@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import RotatingGalaxy from '@/components/atoms/RotatingGalaxy';

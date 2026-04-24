@@ -1,14 +1,13 @@
 import React, { useCallback } from 'react';
 import { metaMask, metaMaskHooks } from '@/web3/connectors';
 
-const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider } = metaMaskHooks;
+const { useChainId, useAccounts, useIsActivating, useIsActive } = metaMaskHooks;
 
 export default function Web3Connect() {
   const chainId = useChainId();
   const accounts = useAccounts();
   const isActivating = useIsActivating();
   const isActive = useIsActive();
-  const provider = useProvider();
 
   const account = accounts ? accounts[0] : undefined;
 

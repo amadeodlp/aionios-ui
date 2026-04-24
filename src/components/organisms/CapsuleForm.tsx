@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ethers } from 'ethers';
-import { FiFile, FiLink, FiCalendar, FiUsers, FiGift, FiKey, FiLock, FiUnlock } from 'react-icons/fi';
+import { FiFile, FiCalendar, FiGift, FiLock } from 'react-icons/fi';
 import { metaMaskHooks } from '@/web3/connectors';
 import { createCapsuleOnChain, createMultiSigCapsuleOnChain, addCryptoAssets } from '@/services/cryptoService';
 
@@ -44,12 +43,11 @@ const CapsuleForm = () => {
     });
 
     // Web3 connection - updated for web3-react v8
-    const { useChainId, useAccounts, useIsActive, useProvider } = metaMaskHooks;
+    const { useAccounts, useIsActive, useProvider } = metaMaskHooks;
     const isActive = useIsActive();
     const accounts = useAccounts();
     const provider = useProvider();
     const account = accounts ? accounts[0] : undefined;
-    const library = provider;
 
     // Form validation state
     const [errors, setErrors] = useState({});
@@ -72,7 +70,7 @@ const CapsuleForm = () => {
     ];
 
     // Handle changes in the form data
-    const handleChange = (field, value) => {
+    const handleChange = (field: string, value: unknown) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
@@ -80,14 +78,14 @@ const CapsuleForm = () => {
     };
 
     // Recipient step handlers
-    const addRecipient = (recipient) => {
+    const addRecipient = (recipient: unknown) => {
         setFormData(prev => ({
             ...prev,
             recipients: [...prev.recipients, recipient]
         }));
     };
 
-    const removeRecipient = (index) => {
+    const removeRecipient = (index: number) => {
         setFormData(prev => ({
             ...prev,
             recipients: prev.recipients.filter((_, i) => i !== index)
@@ -95,21 +93,21 @@ const CapsuleForm = () => {
     };
 
     // Condition step handlers
-    const setConditionType = (type) => {
+    const setConditionType = (type: string) => {
         setFormData(prev => ({
             ...prev,
             conditionType: type
         }));
     };
 
-    const addWitness = (witness) => {
+    const addWitness = (witness: unknown) => {
         setFormData(prev => ({
             ...prev,
             witnesses: [...prev.witnesses, witness]
         }));
     };
 
-    const removeWitness = (index) => {
+    const removeWitness = (index: number) => {
         setFormData(prev => ({
             ...prev,
             witnesses: prev.witnesses.filter((_, i) => i !== index)
@@ -117,28 +115,28 @@ const CapsuleForm = () => {
     };
 
     // Contents step handlers
-    const addFile = (file) => {
+    const addFile = (file: unknown) => {
         setFormData(prev => ({
             ...prev,
             files: [...prev.files, file]
         }));
     };
 
-    const removeFile = (index) => {
+    const removeFile = (index: number) => {
         setFormData(prev => ({
             ...prev,
             files: prev.files.filter((_, i) => i !== index)
         }));
     };
 
-    const addUrl = (url) => {
+    const addUrl = (url: unknown) => {
         setFormData(prev => ({
             ...prev,
             urls: [...prev.urls, url]
         }));
     };
 
-    const removeUrl = (index) => {
+    const removeUrl = (index: number) => {
         setFormData(prev => ({
             ...prev,
             urls: prev.urls.filter((_, i) => i !== index)
