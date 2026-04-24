@@ -189,6 +189,7 @@ const ConditionsStep = ({
                         <DatePicker
                             selected={formData.openDate}
                             onChange={(date) => handleChange('openDate', date)}
+                            selectsRange={true}
                             showTimeSelect
                             dateFormat="MMMM d, yyyy h:mm aa"
                             minDate={new Date()}
