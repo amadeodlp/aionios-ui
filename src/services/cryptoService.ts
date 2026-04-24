@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, formatEther, parseEther } from 'ethers';
 import { CONTRACT_ADDRESSES } from '@/web3/config';
 import TimeCapsuleABI from '@/web3/abis/TimeCapsule.json';
 
@@ -154,7 +154,7 @@ export const addCryptoAssets = async (
                 // If conditional transfer, add ETH to contract
                 if (asset.transferType === 'conditional') {
                     const tx = await contract.depositEth(capsuleId, {
-                        value: ethers.utils.parseEther(asset.amount.toString())
+                        value: parseEther(asset.amount.toString())
                     });
 
                     const receipt = await tx.wait();
@@ -175,7 +175,7 @@ export const addCryptoAssets = async (
                 const isNFT = asset.type === 'NFT';
                 const amount = isNFT
                     ? asset.amount.toString() // tokenId for NFTs
-                    : ethers.utils.parseEther(asset.amount.toString()); // Parse amount for ERC20 tokens
+                    : parseEther(asset.amount.toString()); // Parse amount for ERC20 tokens
 
                 const transferType = asset.transferType === 'conditional'
                     ? 1 // AssetTransferType.Conditional
@@ -320,11 +320,11 @@ export const getCapsuleInfo = async (
         openTime: new Date(info.openTime.toNumber() * 1000),
         status: ['Draft', 'Pending', 'Sealed', 'ReadyToOpen', 'Opened', 'Failed'][info.status],
         conditionType: ['Time', 'MultiSig', 'Oracle', 'Compound'][info.conditionType],
-        ethBalance: ethers.utils.formatEther(info.ethBalance),
+        ethBalance: formatEther(info.ethBalance),
         assets: assets.map((asset: any) => ({
             tokenAddress: asset.tokenAddress,
             tokenId: asset.tokenId.toString(),
-            amount: asset.isNFT ? asset.tokenId.toString() : ethers.utils.formatEther(asset.amount),
+            amount: asset.isNFT ? asset.tokenId.toString() : formatEther(asset.amount),
             isNFT: asset.isNFT,
             isApproved: asset.isApproved,
             transferType: asset.transferType === 0 ? 'immediate' : 'conditional'

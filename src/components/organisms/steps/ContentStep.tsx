@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiFile, FiLink, FiUpload, FiX, FiDollarSign, FiImage, FiFileText, FiGlobe, FiClock, FiLayers, FiLock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ethers } from 'ethers';
+import { ethers, formatEther, parseEther, Interface } from 'ethers';
 import { metaMask, metaMaskHooks } from '@/web3/connectors';
 import { CONTRACT_ADDRESSES } from '@/web3/config';
 import TimeCapsuleABI from '@/web3/abis/TimeCapsule.json'; // You'll need to create this ABI file
@@ -47,7 +47,7 @@ const ContentsStep = ({
             const checkBalance = async () => {
                 try {
                     const balance = await provider.getBalance(walletAccount);
-                    setWalletBalance(ethers.utils.formatEther(balance));
+                    setWalletBalance(formatEther(balance));
                 } catch (error) {
                     console.error("Error fetching balance:", error);
                 }
@@ -97,7 +97,7 @@ const ContentsStep = ({
                     // For ERC20 tokens, we need to approve the contract first
                     else if (newCryptoAsset.type === 'ERC20' && newCryptoAsset.token) {
                         // Get ERC20 interface
-                        const erc20Interface = new ethers.utils.Interface([
+                        const erc20Interface = new Interface([
                             "function approve(address spender, uint256 amount) external returns (bool)"
                         ]);
 
@@ -109,7 +109,7 @@ const ContentsStep = ({
                         );
 
                         // Convert amount to wei
-                        const amount = ethers.utils.parseEther(newCryptoAsset.amount);
+                        const amount = parseEther(newCryptoAsset.amount);
 
                         // Approve the capsule contract to spend tokens
                         const tx = await tokenContract.approve(CONTRACT_ADDRESSES.AIONIOS_CAPSULE, amount);
@@ -124,7 +124,7 @@ const ContentsStep = ({
                     // For NFTs, we need a different approval method
                     else if (newCryptoAsset.type === 'NFT' && newCryptoAsset.token) {
                         // Get ERC721 interface
-                        const erc721Interface = new ethers.utils.Interface([
+                        const erc721Interface = new Interface([
                             "function approve(address to, uint256 tokenId) external"
                         ]);
 
