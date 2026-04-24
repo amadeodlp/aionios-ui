@@ -103,17 +103,20 @@ const ReviewStep = ({
                         {formData.recipients.length === 0 ? (
                             <p className="text-foreground/50 text-sm">No recipients added</p>
                         ) : (
-                            formData.recipients.map((recipient, index) => (
-                                <div key={index} className="flex items-center">
-                                    <FiUser className="text-foreground/60 mr-2" size={16} />
-                                    <span className="text-foreground">{recipient.name}</span>
-                                    {recipient.email && (
-                                        <span className="text-foreground/60 text-sm ml-2">
-                                            ({recipient.email})
-                                        </span>
-                                    )}
-                                </div>
-                            ))
+                            formData.recipients.map((recipient, index) => {
+                                const recipientObj = recipient as unknown as { name: string; email?: string };
+                                return (
+                                    <div key={index} className="flex items-center">
+                                        <FiUser className="text-foreground/60 mr-2" size={16} />
+                                        <span className="text-foreground">{recipientObj.name}</span>
+                                        {recipientObj.email && (
+                                            <span className="text-foreground/60 text-sm ml-2">
+                                                ({recipientObj.email})
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })
                         )}
                         {formData.isSecret && (
                             <div className="flex items-center mt-2 text-foreground">
@@ -141,15 +144,18 @@ const ReviewStep = ({
                             <div className="mt-2">
                                 <p className="text-sm text-foreground/60 mb-1">Witnesses:</p>
                                 <div className="space-y-1">
-                                    {formData.witnesses.map((witness, index) => (
-                                        <div key={index} className="flex items-center text-sm">
-                                            <FiUser className="text-foreground/60 mr-2" size={14} />
-                                            <span className="text-foreground mr-1">{witness.name}</span>
-                                            <span className="text-foreground/60 text-xs">
-                                                ({witness.email})
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {formData.witnesses.map((witness, index) => {
+                                        const witnessObj = witness as unknown as { name: string; email: string };
+                                        return (
+                                            <div key={index} className="flex items-center text-sm">
+                                                <FiUser className="text-foreground/60 mr-2" size={14} />
+                                                <span className="text-foreground mr-1">{witnessObj.name}</span>
+                                                <span className="text-foreground/60 text-xs">
+                                                    ({witnessObj.email})
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -224,23 +230,26 @@ const ReviewStep = ({
                             Files
                         </h4>
                         <div className="space-y-2">
-                            {formData.files.map((file, index) => (
-                                <div key={index} className="flex items-center justify-between bg-foreground/10 p-3 rounded-lg">
-                                    <div className="flex items-center">
-                                        {file.type?.startsWith('image/')
-                                            ? <FiImage className="text-foreground mr-3" size={20} />
-                                            : <FiFile className="text-foreground/60 mr-3" size={20} />
-                                        }
-                                        <div>
-                                            <div className="font-medium text-foreground truncate max-w-[200px]">{file.name}</div>
-                                            <div className="text-xs text-foreground/60">{formatFileSize(file.size)}</div>
+                            {formData.files.map((file, index) => {
+                                const fileObj = file as unknown as { name: string; size: number; type?: string };
+                                return (
+                                    <div key={index} className="flex items-center justify-between bg-foreground/10 p-3 rounded-lg">
+                                        <div className="flex items-center">
+                                            {fileObj.type?.startsWith('image/')
+                                                ? <FiImage className="text-foreground mr-3" size={20} />
+                                                : <FiFile className="text-foreground/60 mr-3" size={20} />
+                                            }
+                                            <div>
+                                                <div className="font-medium text-foreground truncate max-w-[200px]">{fileObj.name}</div>
+                                                <div className="text-xs text-foreground/60">{formatFileSize(fileObj.size)}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-xs bg-green-900/30 text-green-300 px-2 py-1 rounded-full">
+                                            Ready
                                         </div>
                                     </div>
-                                    <div className="text-xs bg-green-900/30 text-green-300 px-2 py-1 rounded-full">
-                                        Ready
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -253,17 +262,20 @@ const ReviewStep = ({
                             Links
                         </h4>
                         <div className="space-y-2">
-                            {formData.urls.map((url, index) => (
-                                <div key={index} className="flex items-center justify-between bg-foreground/10 p-3 rounded-lg">
-                                    <div className="flex items-center">
-                                        <FiGlobe className="text-foreground mr-3" size={20} />
-                                        <div>
-                                            <div className="font-medium text-foreground">{url.title}</div>
-                                            <div className="text-xs text-foreground/60 truncate max-w-[250px]">{url.url}</div>
+                            {formData.urls.map((url, index) => {
+                                const urlObj = url as unknown as { title: string; url: string };
+                                return (
+                                    <div key={index} className="flex items-center justify-between bg-foreground/10 p-3 rounded-lg">
+                                        <div className="flex items-center">
+                                            <FiGlobe className="text-foreground mr-3" size={20} />
+                                            <div>
+                                                <div className="font-medium text-foreground">{urlObj.title}</div>
+                                                <div className="text-xs text-foreground/60 truncate max-w-[250px]">{urlObj.url}</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -276,23 +288,30 @@ const ReviewStep = ({
                             Crypto Assets
                         </h4>
                         <div className="space-y-2">
-                            {formData.cryptoAssets.map((asset, index) => (
-                                <div key={index} className="flex items-center justify-between bg-foreground/10 p-3 rounded-lg">
-                                    <div className="flex items-center">
-                                        <FiDollarSign className="text-foreground mr-3" size={20} />
-                                        <div>
-                                            <div className="font-medium text-foreground">
-                                                {asset.amount} {asset.type}
-                                                {asset.type !== 'ETH' && asset.token && (
-                                                    <span className="text-xs text-foreground/60 ml-1">
-                                                        ({asset.token.slice(0, 6)}...{asset.token.slice(-4)})
-                                                    </span>
-                                                )}
+                            {formData.cryptoAssets.map((asset, index) => {
+                                const assetObj = asset as unknown as {
+                                    amount: string | number;
+                                    type: string;
+                                    token?: string;
+                                };
+                                return (
+                                    <div key={index} className="flex items-center justify-between bg-foreground/10 p-3 rounded-lg">
+                                        <div className="flex items-center">
+                                            <FiDollarSign className="text-foreground mr-3" size={20} />
+                                            <div>
+                                                <div className="font-medium text-foreground">
+                                                    {assetObj.amount} {assetObj.type}
+                                                    {assetObj.type !== 'ETH' && assetObj.token && (
+                                                        <span className="text-xs text-foreground/60 ml-1">
+                                                            ({assetObj.token.slice(0, 6)}...{assetObj.token.slice(-4)})
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

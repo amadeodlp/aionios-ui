@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiFile, FiCalendar, FiGift, FiLock } from 'react-icons/fi';
+import { BrowserProvider } from 'ethers';
 import { metaMaskHooks } from '@/web3/connectors';
-import { createCapsuleOnChain, createMultiSigCapsuleOnChain, addCryptoAssets } from '@/services/cryptoService';
+import { createCapsuleOnChain, createMultiSigCapsuleOnChain, addCryptoAssets, type Asset } from '@/services/cryptoService';
 
 // Form Steps Components
 import RecipientStep from './steps/RecipientStep';
@@ -228,8 +229,9 @@ const CapsuleForm = () => {
             // Process files for IPFS storage
             const processedFiles = await Promise.all(
                 formData.files.map(async file => {
-                    const ipfsHash = await uploadToIPFS(file);
-                    return { name: file.name, type: file.type, ipfsHash };
+                    const fileObj = file as File;
+                    const ipfsHash = await uploadToIPFS(fileObj);
+                    return { name: fileObj.name, type: fileObj.type, ipfsHash };
                 })
             );
 
@@ -247,31 +249,35 @@ const CapsuleForm = () => {
             const contentHash = await uploadToIPFS(contentFile);
 
             // Determine which contract function to call based on condition type
-            let capsuleId;
+            let capsuleId: number = 0;
 
             if (formData.conditionType === 'time') {
                 // Convert date to timestamp (seconds since epoch)
-                const openTime = Math.floor(new Date(formData.openDate).getTime() / 1000);
+                const openDate = formData.openDate as unknown as Date | null;
+                const openTime = openDate ? Math.floor(new Date(openDate).getTime() / 1000) : Math.floor(Date.now() / 1000);
 
                 // Create a time-based capsule using the blockchain contract
+                const firstRecipient = formData.recipients[0] as unknown as { name: string; address: string };
                 const result = await createCapsuleOnChain({
-                    title: formData.recipients[0].name + "'s Time Capsule",
+                    title: firstRecipient.name + "'s Time Capsule",
                     contentHash,
-                    recipient: formData.recipients[0].address,
+                    recipient: firstRecipient.address,
                     openTime
-                }, provider);
+                }, (provider || undefined) as unknown as BrowserProvider);
 
                 capsuleId = result.id;
             }
             else if (formData.conditionType === 'multisig') {
                 // Create a multi-signature capsule
+                const firstRecipient = formData.recipients[0] as unknown as { name: string; address: string };
+                const witnessesTyped = formData.witnesses as unknown as Array<{ address: string; name: string }>;
                 const result = await createMultiSigCapsuleOnChain({
-                    title: formData.recipients[0].name + "'s Time Capsule",
+                    title: firstRecipient.name + "'s Time Capsule",
                     contentHash,
-                    recipient: formData.recipients[0].address,
-                    witnesses: formData.witnesses,
-                    requiredSignatures: formData.witnesses.length // Require all witnesses
-                }, provider);
+                    recipient: firstRecipient.address,
+                    witnesses: witnessesTyped,
+                    requiredSignatures: witnessesTyped.length // Require all witnesses
+                }, (provider || undefined) as unknown as BrowserProvider);
 
                 capsuleId = result.id;
             }
@@ -281,8 +287,8 @@ const CapsuleForm = () => {
                 // Add assets to the capsule
                 const assetResults = await addCryptoAssets(
                     capsuleId,
-                    formData.cryptoAssets,
-                    provider
+                    formData.cryptoAssets as Asset[],
+                    (provider || undefined) as unknown as BrowserProvider
                 );
 
                 console.log('Asset addition results:', assetResults);
@@ -303,7 +309,8 @@ const CapsuleForm = () => {
 
             // Send invitations to witnesses if applicable
             if (formData.conditionType === 'multisig' && !formData.isSecret) {
-                await sendInvitations(formData.witnesses, capsule.id);
+                const witnessesTyped = formData.witnesses as unknown as Array<{ address: string; name: string }>;
+                await sendInvitations(witnessesTyped, capsule.id);
             }
 
             setIsComplete(true);

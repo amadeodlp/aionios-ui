@@ -91,9 +91,9 @@ const CapsuleDetailsModal: React.FC<CapsuleDetailsModalProps> = ({
       alert('Please connect your wallet to subscribe');
       return;
     }
-    
+
     try {
-      await subscribeToCapsule(parseInt(capsule.id), address);
+      await subscribeToCapsule(parseInt(capsule.id));
       if (refreshData) refreshData();
     } catch (error) {
       console.error('Error subscribing:', error);

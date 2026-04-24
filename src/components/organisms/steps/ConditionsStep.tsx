@@ -51,7 +51,7 @@ const ConditionsStep = ({
     ];
 
     // Handle special date selection
-    const handleSpecialDateSelect = (dateType) => {
+    const handleSpecialDateSelect = (dateType: string) => {
         // This would be replaced with logic to calculate the actual date
         const today = new Date();
         let targetDate;
@@ -188,7 +188,7 @@ const ConditionsStep = ({
                             Choose a Specific Date
                         </label>
                         <DatePicker
-                            selected={formData.openDate}
+                            selected={(formData.openDate as unknown as Date | null) || undefined}
                             onChange={(date) => handleChange('openDate', date)}
                             selectsRange={true}
                             showTimeSelect
@@ -305,30 +305,33 @@ const ConditionsStep = ({
                         <div className="space-y-3 mt-4">
                             <h4 className="text-sm font-medium text-foreground/80">Added Witnesses</h4>
                             <div className="space-y-2">
-                                {formData.witnesses.map((witness, index) => (
-                                    <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="flex items-center justify-between bg-foreground/5 p-3 border border-foreground/10 rounded-lg"
-                                    >
-                                        <div className="flex items-center space-x-3">
-                                            <div className="bg-foreground/10 rounded-full p-2">
-                                                <FiUser className="text-foreground" size={18} />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-foreground">{witness.name}</div>
-                                                <div className="text-foreground/60 text-sm">{witness.email}</div>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeWitness(index)}
-                                            className="text-foreground/40 hover:text-red-400"
+                                {formData.witnesses.map((witness, index) => {
+                                    const witnessTyped = witness as unknown as { address?: string; name?: string; email?: string };
+                                    return (
+                                        <motion.div
+                                            key={index}
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex items-center justify-between bg-foreground/5 p-3 border border-foreground/10 rounded-lg"
                                         >
-                                            <FiX size={18} />
-                                        </button>
-                                    </motion.div>
-                                ))}
+                                            <div className="flex items-center space-x-3">
+                                                <div className="bg-foreground/10 rounded-full p-2">
+                                                    <FiUser className="text-foreground" size={18} />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-foreground">{witnessTyped.name}</div>
+                                                    <div className="text-foreground/60 text-sm">{witnessTyped.email}</div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => removeWitness(index)}
+                                                className="text-foreground/40 hover:text-red-400"
+                                            >
+                                                <FiX size={18} />
+                                            </button>
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

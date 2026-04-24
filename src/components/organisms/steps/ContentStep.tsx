@@ -30,7 +30,7 @@ const ContentsStep = ({
     const [walletBalance, setWalletBalance] = useState('0');
     const [isWalletConnecting, setIsWalletConnecting] = useState(false);
 
-    const fileInputRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const accounts = useAccounts();
     const isActive = useIsActive();
     const provider = useProvider();
@@ -43,7 +43,7 @@ const ContentsStep = ({
             const checkBalance = async () => {
                 try {
                     const balance = await provider.getBalance(walletAccount);
-                    setWalletBalance(formatEther(balance));
+                    setWalletBalance(formatEther(balance as any));
                 } catch (error) {
                     console.error("Error fetching balance:", error);
                 }
@@ -76,7 +76,7 @@ const ContentsStep = ({
 
     const handleCryptoAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newCryptoAsset.amount > 0 && isActive) {
+        if (parseFloat(newCryptoAsset.amount) > 0 && isActive) {
             try {
                 // If immediate transfer type is selected and it's ETH
                 if (newCryptoAsset.transferType === 'immediate' && newCryptoAsset.type === 'ETH') {
@@ -98,10 +98,12 @@ const ContentsStep = ({
                         ]);
 
                         // Create contract instance
+                        if (!provider) throw new Error('Provider not available');
+                        const signer = provider.getSigner() as any;
                         const tokenContract = new ethers.Contract(
                             newCryptoAsset.token,
                             erc20Interface,
-                            provider.getSigner()
+                            signer
                         );
 
                         // Convert amount to wei
@@ -125,10 +127,12 @@ const ContentsStep = ({
                         ]);
 
                         // Create contract instance
+                        if (!provider) throw new Error('Provider not available');
+                        const signer = provider.getSigner() as any;
                         const nftContract = new ethers.Contract(
                             newCryptoAsset.token,
                             erc721Interface,
-                            provider.getSigner()
+                            signer
                         );
 
                         // Approve the capsule contract for the NFT
@@ -182,7 +186,7 @@ const ContentsStep = ({
 
     // File type icons
     const getFileIcon = (file: unknown) => {
-        const fileObj = file as { type: string };
+        const fileObj = file as unknown as { type: string };
         const type = fileObj.type.split('/')[0];
 
         switch (type) {
@@ -251,7 +255,7 @@ const ContentsStep = ({
                     className="border-2 border-dashed border-foreground/20 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-foreground/40 transition-colors duration-200"
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
-                    onClick={() => fileInputRef.current.click()}
+                    onClick={() => fileInputRef.current?.click()}
                 >
                     <FiUpload className="text-foreground/40 mb-2" size={36} />
                     <p className="text-foreground/60 mb-1">
@@ -275,31 +279,34 @@ const ContentsStep = ({
                         <div className="space-y-2">
                             <h4 className="text-sm font-medium text-foreground/80">Uploaded Files</h4>
                             <AnimatePresence>
-                                {formData.files.map((file, index) => (
-                                    <motion.div
-                                        key={index}
-                                        variants={itemVariants}
-                                        initial="hidden"
-                                        animate="visible"
-                                        exit="hidden"
-                                        transition={{ duration: 0.3 }}
-                                        className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
-                                    >
-                                        <div className="flex items-center space-x-3">
-                                            {getFileIcon(file)}
-                                            <div>
-                                                <div className="font-medium truncate max-w-[200px] text-foreground">{file.name}</div>
-                                                <div className="text-xs text-foreground/60">{formatFileSize(file.size)}</div>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeFile(index)}
-                                            className="text-foreground/40 hover:text-red-400"
+                                {formData.files.map((file, index) => {
+                                    const fileObj = file as unknown as { name: string; size: number };
+                                    return (
+                                        <motion.div
+                                            key={index}
+                                            variants={itemVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                            transition={{ duration: 0.3 }}
+                                            className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
                                         >
-                                            <FiX size={18} />
-                                        </button>
-                                    </motion.div>
-                                ))}
+                                            <div className="flex items-center space-x-3">
+                                                {getFileIcon(file)}
+                                                <div>
+                                                    <div className="font-medium truncate max-w-[200px] text-foreground">{fileObj.name}</div>
+                                                    <div className="text-xs text-foreground/60">{formatFileSize(fileObj.size)}</div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => removeFile(index)}
+                                                className="text-foreground/40 hover:text-red-400"
+                                            >
+                                                <FiX size={18} />
+                                            </button>
+                                        </motion.div>
+                                    );
+                                })}
                             </AnimatePresence>
                         </div>
                     )}
@@ -356,31 +363,34 @@ const ContentsStep = ({
                         <div className="space-y-2">
                             <h4 className="text-sm font-medium text-foreground/80">Saved Links</h4>
                             <AnimatePresence>
-                                {formData.urls.map((url, index) => (
-                                    <motion.div
-                                        key={index}
-                                        variants={itemVariants}
-                                        initial="hidden"
-                                        animate="visible"
-                                        exit="hidden"
-                                        transition={{ duration: 0.3 }}
-                                        className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
-                                    >
-                                        <div className="flex items-center space-x-3">
-                                            <FiGlobe className="text-foreground" size={20} />
-                                            <div>
-                                                <div className="font-medium text-foreground">{url.title}</div>
-                                                <div className="text-xs text-foreground/60 truncate max-w-[250px]">{url.url}</div>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeUrl(index)}
-                                            className="text-foreground/40 hover:text-red-400"
+                                {formData.urls.map((url, index) => {
+                                    const urlObj = url as unknown as { title: string; url: string };
+                                    return (
+                                        <motion.div
+                                            key={index}
+                                            variants={itemVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                            transition={{ duration: 0.3 }}
+                                            className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
                                         >
-                                            <FiX size={18} />
-                                        </button>
-                                    </motion.div>
-                                ))}
+                                            <div className="flex items-center space-x-3">
+                                                <FiGlobe className="text-foreground" size={20} />
+                                                <div>
+                                                    <div className="font-medium text-foreground">{urlObj.title}</div>
+                                                    <div className="text-xs text-foreground/60 truncate max-w-[250px]">{urlObj.url}</div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => removeUrl(index)}
+                                                className="text-foreground/40 hover:text-red-400"
+                                            >
+                                                <FiX size={18} />
+                                            </button>
+                                        </motion.div>
+                                    );
+                                })}
                             </AnimatePresence>
                         </div>
                     )}
@@ -492,15 +502,13 @@ const ContentsStep = ({
                                             <span className="text-sm font-medium text-foreground">Assets will be locked until capsule is opened</span>
                                         </div>
                                         <div className="text-sm text-foreground/70">
-                                            {formData.conditionType === 'time' && formData.openDate && (
-                                                <p>Will be released when the capsule opens on {new Date(formData.openDate).toLocaleDateString()}</p>
-                                            )}
-                                            {formData.conditionType === 'multisig' && (
+                                            {(formData.conditionType === 'time' && formData.openDate) ? (
+                                                <p>Will be released when the capsule opens on {new Date(formData.openDate as unknown as Date | string).toLocaleDateString()}</p>
+                                            ) : formData.conditionType === 'multisig' ? (
                                                 <p>Will be released when {formData.witnesses.length} witnesses approve opening</p>
-                                            )}
-                                            {formData.conditionType === 'oracle' && (
+                                            ) : formData.conditionType === 'oracle' ? (
                                                 <p>Will be released when the specified external event occurs</p>
-                                            )}
+                                            ) : null}
                                         </div>
                                     </div>
                                 )}
@@ -521,48 +529,57 @@ const ContentsStep = ({
                             <div className="space-y-2 mt-4">
                                 <h4 className="text-sm font-medium text-foreground/80">Added Assets</h4>
                                 <AnimatePresence>
-                                    {formData.cryptoAssets.map((asset, index) => (
-                                        <motion.div
-                                            key={index}
-                                            variants={itemVariants}
-                                            initial="hidden"
-                                            animate="visible"
-                                            exit="hidden"
-                                            transition={{ duration: 0.3 }}
-                                            className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                <FiDollarSign className="text-foreground" size={20} />
-                                                <div>
-                                                    <div className="font-medium text-foreground">
-                                                        {asset.amount} {asset.type}
-                                                        {asset.type !== 'ETH' && asset.token && (
-                                                            <span className="text-xs text-foreground/60 ml-1">
-                                                                ({asset.token.slice(0, 6)}...{asset.token.slice(-4)})
-                                                            </span>
-                                                        )}
+                                    {formData.cryptoAssets.map((asset, index) => {
+                                        const assetObj = asset as unknown as {
+                                            amount: string | number;
+                                            type: string;
+                                            token?: string;
+                                            transferType?: string;
+                                            isApproved?: boolean;
+                                        };
+                                        return (
+                                            <motion.div
+                                                key={index}
+                                                variants={itemVariants}
+                                                initial="hidden"
+                                                animate="visible"
+                                                exit="hidden"
+                                                transition={{ duration: 0.3 }}
+                                                className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    <FiDollarSign className="text-foreground" size={20} />
+                                                    <div>
+                                                        <div className="font-medium text-foreground">
+                                                            {assetObj.amount} {assetObj.type}
+                                                            {assetObj.type !== 'ETH' && assetObj.token && (
+                                                                <span className="text-xs text-foreground/60 ml-1">
+                                                                    ({assetObj.token.slice(0, 6)}...{assetObj.token.slice(-4)})
+                                                                </span>
+                                                            )}
 
-                                                        {asset.transferType === 'conditional' && (
-                                                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-accent/10 text-accent">
-                                                                <FiLock className="mr-1" size={12} /> Locked until open
-                                                            </span>
+                                                            {assetObj.transferType === 'conditional' && (
+                                                                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-accent/10 text-accent">
+                                                                    <FiLock className="mr-1" size={12} /> Locked until open
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {assetObj.isApproved && (
+                                                            <div className="text-xs text-green-500">
+                                                                ? Approved
+                                                            </div>
                                                         )}
                                                     </div>
-                                                    {asset.isApproved && (
-                                                        <div className="text-xs text-green-500">
-                                                            ? Approved
-                                                        </div>
-                                                    )}
                                                 </div>
-                                            </div>
-                                            <button
-                                                onClick={() => removeCryptoAsset(index)}
-                                                className="text-foreground/40 hover:text-red-400"
-                                            >
-                                                <FiX size={18} />
-                                            </button>
-                                        </motion.div>
-                                    ))}
+                                                <button
+                                                    onClick={() => removeCryptoAsset(index)}
+                                                    className="text-foreground/40 hover:text-red-400"
+                                                >
+                                                    <FiX size={18} />
+                                                </button>
+                                            </motion.div>
+                                        );
+                                    })}
                                 </AnimatePresence>
                             </div>
                         )}

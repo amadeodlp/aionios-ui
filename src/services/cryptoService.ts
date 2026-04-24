@@ -1,4 +1,4 @@
-import { ethers, formatEther, parseEther, BrowserProvider, Contract } from 'ethers';
+import { formatEther, parseEther, BrowserProvider, Contract } from 'ethers';
 import { CONTRACT_ADDRESSES } from '@/web3/config';
 import TimeCapsuleABI from '@/web3/abis/TimeCapsule.json';
 
@@ -36,11 +36,10 @@ export interface TransactionResult {
 export const getTimeCapsuleContract = (provider: BrowserProvider | null): Contract | null => {
     if (!provider) return null;
 
-    const signer = provider.getSigner();
     return new Contract(
         CONTRACT_ADDRESSES.AIONIOS_CAPSULE,
         TimeCapsuleABI,
-        signer
+        provider as any
     );
 };
 

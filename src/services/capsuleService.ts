@@ -136,22 +136,34 @@ export const createCapsule = async (capsuleData: any): Promise<Capsule> => {
 };
 
 export const incrementViewCount = async (id: number): Promise<void> => {
-  await supabase.rpc('increment_capsule_views', { capsule_id: id }).catch(() => {});
+  try {
+    await supabase.rpc('increment_capsule_views', { capsule_id: id });
+  } catch {
+    // Silently ignore errors
+  }
 };
 
 export const incrementShareCount = async (id: number): Promise<void> => {
-  await supabase.rpc('increment_capsule_shares', { capsule_id: id }).catch(() => {});
+  try {
+    await supabase.rpc('increment_capsule_shares', { capsule_id: id });
+  } catch {
+    // Silently ignore errors
+  }
 };
 
-export const subscribeToCapsule = async (id: number, userAddress: string): Promise<void> => {
-  await supabase.from('interactions').insert({
-    target_id:        String(id),
-    target_type:      'capsule',
-    interaction_type: 'subscribe',
-  }).catch(() => {});
+export const subscribeToCapsule = async (id: number): Promise<void> => {
+  try {
+    await supabase.from('interactions').insert({
+      target_id:        String(id),
+      target_type:      'capsule',
+      interaction_type: 'subscribe',
+    });
+  } catch {
+    // Silently ignore errors
+  }
 };
 
-export const openCapsule = async (id: number, address: string): Promise<Capsule | null> => {
+export const openCapsule = async (id: number): Promise<Capsule | null> => {
   const { data } = await supabase
     .from('capsules')
     .update({ status: 'OPENED', opened_at: new Date().toISOString() })

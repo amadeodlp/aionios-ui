@@ -8,7 +8,9 @@ import {
     FiUsers,
     FiDownload,
     FiArrowRight,
-    FiGift
+    FiGift,
+    FiMail,
+    FiLink
 } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { SuccessStepProps } from '@/types/capsule';

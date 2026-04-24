@@ -66,38 +66,41 @@ const RecipientStep = ({ formData, handleChange, addRecipient, removeRecipient, 
                 )}
 
                 <div className="space-y-3">
-                    {formData.recipients.map((recipient, index) => (
-                        <motion.div
-                            key={index}
-                            variants={itemVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="hidden"
-                            transition={{ duration: 0.3 }}
-                            className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-foreground/20 rounded-full flex items-center justify-center text-foreground">
-                                    {recipient.name.charAt(0).toUpperCase()}
+                    {formData.recipients.map((recipient, index) => {
+                        const recipientObj = recipient as unknown as { name: string; email: string; relationship: string };
+                        return (
+                            <motion.div
+                                key={index}
+                                variants={itemVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="hidden"
+                                transition={{ duration: 0.3 }}
+                                className="flex items-center justify-between bg-foreground/5 p-3 rounded-lg"
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 bg-foreground/20 rounded-full flex items-center justify-center text-foreground">
+                                        {recipientObj.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-foreground">{recipientObj.name}</div>
+                                        <div className="text-sm text-foreground/60">{recipientObj.email}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="font-medium text-foreground">{recipient.name}</div>
-                                    <div className="text-sm text-foreground/60">{recipient.email}</div>
+                                <div className="flex items-center">
+                                    <span className="text-sm text-foreground bg-foreground/10 px-2 py-1 rounded-full mr-2">
+                                        {recipientObj.relationship}
+                                    </span>
+                                    <button
+                                        onClick={() => removeRecipient(index)}
+                                        className="text-foreground/40 hover:text-red-400"
+                                    >
+                                        <FiX size={18} />
+                                    </button>
                                 </div>
-                            </div>
-                            <div className="flex items-center">
-                                <span className="text-sm text-foreground bg-foreground/10 px-2 py-1 rounded-full mr-2">
-                                    {recipient.relationship}
-                                </span>
-                                <button
-                                    onClick={() => removeRecipient(index)}
-                                    className="text-foreground/40 hover:text-red-400"
-                                >
-                                    <FiX size={18} />
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
 
