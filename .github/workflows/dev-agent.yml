@@ -1,0 +1,50 @@
+name: Dev Agent
+
+on:
+  schedule:
+    - cron: '0 12 * * 1-5'  # lunes a viernes, 12pm UTC (9am ARG)
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Checkout _infra
+        uses: actions/checkout@v4
+        with:
+          repository: amadeodlp/_infra
+          token: ${{ secrets.PAT_TOKEN }}
+          path: _infra
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install _infra dependencies
+        run: npm ci
+        working-directory: _infra
+
+      - name: Configure git
+        run: |
+          git config --global user.email "dev-agent@amadeodlp.lat"
+          git config --global user.name "Dev Agent"
+
+      - name: Run dev agent
+        run: node dev-agent.js
+        working-directory: _infra
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          AGENT_REPO_PATH: ${{ github.workspace }}
+          DEV_AGENT_AUTO_MERGE: 'true'
