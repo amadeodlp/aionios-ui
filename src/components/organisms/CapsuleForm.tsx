@@ -18,7 +18,24 @@ import { sendInvitations } from '@/services/notificationService';
 const CapsuleForm = () => {
     // Main form state
     const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        recipients: unknown[];
+        isSecret: boolean;
+        message: string;
+        conditionType: string;
+        openDate: unknown;
+        witnesses: unknown[];
+        oracleData: {
+            source: string;
+            eventDescription: string;
+            parameters: Record<string, unknown>;
+        };
+        compoundConditions: unknown[];
+        textContent: string;
+        files: unknown[];
+        urls: unknown[];
+        cryptoAssets: unknown[];
+    }>({
         // Recipient information
         recipients: [],
         isSecret: false,
@@ -143,14 +160,14 @@ const CapsuleForm = () => {
         }));
     };
 
-    const addCryptoAsset = (asset) => {
+    const addCryptoAsset = (asset: unknown) => {
         setFormData(prev => ({
             ...prev,
             cryptoAssets: [...prev.cryptoAssets, asset]
         }));
     };
 
-    const removeCryptoAsset = (index) => {
+    const removeCryptoAsset = (index: number) => {
         setFormData(prev => ({
             ...prev,
             cryptoAssets: prev.cryptoAssets.filter((_, i) => i !== index)
