@@ -32,7 +32,7 @@ jobs:
           node-version: 20
 
       - name: Install _infra dependencies
-        run: cd _infra && npm ci
+        run: npm ci --prefix _infra
 
       - name: Configure git
         run: |
@@ -40,7 +40,7 @@ jobs:
           git config --global user.name "Dev Agent"
 
       - name: Run dev agent
-        run: cd _infra && node dev-agent.js
+        run: node _infra/dev-agent.js
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
