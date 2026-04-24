@@ -1,413 +1,224 @@
 import { ethers } from 'ethers';
 import AioniosCapsuleABI from '../contracts/AioniosCapsuleABI.json';
-import { CONTRACT_ADDRESSES, API_URLS } from '@/web3/config';
+import { CONTRACT_ADDRESSES } from '@/web3/config';
+import { supabase } from '@/lib/supabase';
+import type { Capsule } from '@/store/slices/capsuleSlice';
 
-// API Base URL
-const API_BASE_URL = API_URLS.BASE_URL;
-const IPFS_GATEWAY = API_URLS.IPFS_GATEWAY;
-const AIONIOS_CONTRACT_ADDRESS = CONTRACT_ADDRESSES.AIONIOS_CAPSULE;
+// -------------------------------------------------------
+// Helpers: map Supabase row → Redux Capsule shape
+// -------------------------------------------------------
+function mapRow(row: any): Capsule {
+  return {
+    id:               String(row.id),
+    title:            row.title,
+    description:      row.description || '',
+    content:          row.ipfs_hash   || '',
+    openCondition: {
+      type:  (row.condition_type || 'time').toLowerCase() as any,
+      value: row.open_date ? new Date(row.open_date).getTime() : Date.now(),
+    },
+    assets:           [],
+    recipientAddress: row.creator_address || '',
+    status:           (row.status || 'SEALED').toLowerCase() as any,
+    createdAt:        row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+    openedAt:         row.opened_at  ? new Date(row.opened_at).getTime()  : undefined,
+    viewCount:        row.view_count         || 0,
+    shareCount:       row.share_count        || 0,
+    subscriptionCount: row.subscription_count || 0,
+    featured:         row.featured           || false,
+  };
+}
 
-/**
- * Creates a new time capsule
- * @param capsuleData - The capsule data
- * @returns The created capsule
- */
-export const createCapsule = async (capsuleData: any) => {
-  try {
-    // First, interact with the blockchain to create the capsule
-    const blockchainId = await createCapsuleOnBlockchain(
-      capsuleData.conditionType,
-      capsuleData.openDate,
-      capsuleData.recipients.map((r: any) => r.address),
-      capsuleData.witnesses?.map((w: any) => w.address) || []
-    );
-
-    // Prepare form data for backend
-    const formData = new FormData();
-    
-    // Add the capsule metadata
-    const capsulePayload = {
-      ...capsuleData,
-      blockchainId,
-      status: 'PENDING',
-      createdAt: new Date().toISOString()
-    };
-    
-    formData.append('capsule', new Blob([JSON.stringify(capsulePayload)], {
-      type: 'application/json'
-    }));
-
-    // Add content file if any
-    if (capsuleData.files && capsuleData.files.length > 0) {
-      formData.append('content', capsuleData.files[0]);
-    }
-
-    // Send to backend
-    const response = await fetch(`${API_BASE_URL}/capsules`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error creating capsule:", error);
-    throw error;
-  }
+// -------------------------------------------------------
+// READ operations — Supabase
+// -------------------------------------------------------
+export const getPopularCapsules = async (limit = 10): Promise<Capsule[]> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .order('view_count', { ascending: false })
+    .limit(limit);
+  return (data || []).map(mapRow);
 };
 
-/**
- * Creates a capsule on the blockchain
- * @param conditionType - Type of condition (time, multisig, oracle, compound)
- * @param openDate - Date when capsule can be opened (for time condition)
- * @param recipients - Array of recipient addresses
- * @param witnesses - Array of witness addresses (for multisig condition)
- * @returns Blockchain transaction ID
- */
+export const getFeaturedCapsules = async (): Promise<Capsule[]> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .eq('featured', true)
+    .order('created_at', { ascending: false });
+  return (data || []).map(mapRow);
+};
+
+export const getRecentlyOpenedCapsules = async (limit = 10): Promise<Capsule[]> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .eq('status', 'OPENED')
+    .order('opened_at', { ascending: false })
+    .limit(limit);
+  return (data || []).map(mapRow);
+};
+
+export const getMostSubscribedCapsules = async (limit = 10): Promise<Capsule[]> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .order('subscription_count', { ascending: false })
+    .limit(limit);
+  return (data || []).map(mapRow);
+};
+
+export const getCapsule = async (id: number): Promise<Capsule | null> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .eq('id', id)
+    .single();
+  return data ? mapRow(data) : null;
+};
+
+export const getCapsulesByCreator = async (address: string): Promise<Capsule[]> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .eq('creator_address', address)
+    .order('created_at', { ascending: false });
+  return (data || []).map(mapRow);
+};
+
+export const getCapsulesByAddress = async (address: string): Promise<Capsule[]> => {
+  const { data } = await supabase
+    .from('capsules')
+    .select('*')
+    .or(`creator_address.eq.${address},recipient_address.eq.${address}`)
+    .order('created_at', { ascending: false });
+  return (data || []).map(mapRow);
+};
+
+// -------------------------------------------------------
+// WRITE operations
+// -------------------------------------------------------
+export const createCapsule = async (capsuleData: any): Promise<Capsule> => {
+  // 1. Blockchain interaction (unchanged)
+  const blockchainId = await createCapsuleOnBlockchain(
+    capsuleData.conditionType,
+    capsuleData.openDate,
+    capsuleData.recipients.map((r: any) => r.address),
+    capsuleData.witnesses?.map((w: any) => w.address) || []
+  );
+
+  // 2. Upload to IPFS if there's a file
+  let ipfsHash: string | null = null;
+  if (capsuleData.files && capsuleData.files.length > 0) {
+    ipfsHash = await uploadToIPFS(capsuleData.files[0]);
+  }
+
+  // 3. Save metadata to Supabase (replaces backend POST)
+  const { data, error } = await supabase
+    .from('capsules')
+    .insert({
+      title:            capsuleData.title,
+      description:      capsuleData.description || '',
+      blockchain_id:    blockchainId,
+      creator_address:  capsuleData.creatorAddress,
+      recipient_address: capsuleData.recipients?.[0]?.address || null,
+      status:           'PENDING',
+      condition_type:   (capsuleData.conditionType || 'TIME').toUpperCase(),
+      open_date:        capsuleData.openDate,
+      ipfs_hash:        ipfsHash,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapRow(data);
+};
+
+export const incrementViewCount = async (id: number): Promise<void> => {
+  await supabase.rpc('increment_capsule_views', { capsule_id: id }).catch(() => {});
+};
+
+export const incrementShareCount = async (id: number): Promise<void> => {
+  await supabase.rpc('increment_capsule_shares', { capsule_id: id }).catch(() => {});
+};
+
+export const subscribeToCapsule = async (id: number, userAddress: string): Promise<void> => {
+  await supabase.from('interactions').insert({
+    target_id:        String(id),
+    target_type:      'capsule',
+    interaction_type: 'subscribe',
+  }).catch(() => {});
+};
+
+export const openCapsule = async (id: number, address: string): Promise<Capsule | null> => {
+  const { data } = await supabase
+    .from('capsules')
+    .update({ status: 'OPENED', opened_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  return data ? mapRow(data) : null;
+};
+
+// -------------------------------------------------------
+// IPFS helper
+// -------------------------------------------------------
+export const getIPFSUrl = (hash: string): string => {
+  const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.ipfs.io/ipfs/';
+  return `${gateway}${hash}`;
+};
+
+export const uploadToIPFS = async (file: File): Promise<string> => {
+  // Upload to Supabase Storage as alternative to IPFS
+  const path = `capsules/${Date.now()}_${file.name}`;
+  const { data, error } = await supabase.storage
+    .from('capsule-content')
+    .upload(path, file, { upsert: false });
+  if (error) throw new Error(error.message);
+  return data.path;
+};
+
+// -------------------------------------------------------
+// BLOCKCHAIN — unchanged
+// -------------------------------------------------------
 export const createCapsuleOnBlockchain = async (
   conditionType: string,
   openDate: Date | null,
   recipients: string[],
   witnesses: string[]
-) => {
-  try {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error("Ethereum provider not found");
-    }
-
-    // Get provider and signer
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    
-    // Create contract instance
-    const contract = new ethers.Contract(
-      AIONIOS_CONTRACT_ADDRESS,
-      AioniosCapsuleABI,
-      signer
-    );
-
-    let tx;
-    // Different function calls based on condition type
-    switch (conditionType) {
-      case 'time':
-        if (!openDate) throw new Error("Open date is required for time condition");
-        const timestamp = Math.floor(openDate.getTime() / 1000);
-        tx = await contract.createTimeCapsule(recipients, timestamp);
-        break;
-      
-      case 'multisig':
-        if (!witnesses || witnesses.length < 2) 
-          throw new Error("At least two witnesses are required for multisig condition");
-        tx = await contract.createMultisigCapsule(recipients, witnesses, witnesses.length);
-        break;
-      
-      // Add other condition types as needed
-      default:
-        throw new Error(`Unsupported condition type: ${conditionType}`);
-    }
-
-    // Wait for transaction to be mined
-    const receipt = await tx.wait();
-    
-    // Extract capsule ID from events (adjust based on your contract implementation)
-    const event = receipt.events.find((e: any) => e.event === 'CapsuleCreated');
-    if (!event) throw new Error("Capsule creation event not found");
-    
-    return event.args.capsuleId.toString();
-  } catch (error) {
-    console.error("Error creating capsule on blockchain:", error);
-    throw error;
+): Promise<string> => {
+  if (typeof window === 'undefined' || !(window as any).ethereum) {
+    throw new Error('Ethereum provider not found');
   }
-};
+  const provider = new ethers.BrowserProvider((window as any).ethereum);
+  const signer   = await provider.getSigner();
+  const contract = new ethers.Contract(
+    CONTRACT_ADDRESSES.AIONIOS_CAPSULE,
+    AioniosCapsuleABI,
+    signer
+  );
 
-/**
- * Uploads a file to IPFS
- * @param file - File to upload
- * @returns IPFS hash
- */
-export const uploadToIPFS = async (file: File) => {
-  try {
-    // Create form data
-    const formData = new FormData();
-    formData.append('file', file);
-
-    // Send to backend IPFS service
-    const response = await fetch(`${API_BASE_URL}/ipfs/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
+  let tx;
+  switch (conditionType) {
+    case 'time': {
+      if (!openDate) throw new Error('Open date is required for time condition');
+      const timestamp = Math.floor(openDate.getTime() / 1000);
+      tx = await contract.createTimeCapsule(recipients, timestamp);
+      break;
     }
-
-    const data = await response.json();
-    return data.hash;
-  } catch (error) {
-    console.error("Error uploading to IPFS:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets a capsule by its ID
- * @param id - Capsule ID
- * @returns The capsule
- */
-export const getCapsule = async (id: number) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/${id}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
+    case 'multisig': {
+      if (!witnesses || witnesses.length < 2)
+        throw new Error('At least two witnesses are required');
+      tx = await contract.createMultisigCapsule(recipients, witnesses, witnesses.length);
+      break;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting capsule:", error);
-    throw error;
+    default:
+      throw new Error(`Unsupported condition type: ${conditionType}`);
   }
-};
 
-/**
- * Gets capsules by creator address
- * @param address - Creator's blockchain address
- * @returns List of capsules
- */
-export const getCapsulesByCreator = async (address: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/creator/${address}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting capsules by creator:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets capsules by recipient address
- * @param address - Recipient's blockchain address
- * @returns List of capsules
- */
-export const getCapsulesByRecipient = async (address: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/recipient/${address}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting capsules by recipient:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets all capsules for an address (as creator or recipient)
- * @param address - Blockchain address
- * @returns List of capsules
- */
-export const getCapsulesByAddress = async (address: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/address/${address}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting capsules by address:", error);
-    throw error;
-  }
-};
-
-/**
- * Attempts to open a capsule
- * @param id - Capsule ID
- * @param address - Requester's blockchain address
- * @returns The opened capsule if successful
- */
-export const openCapsule = async (id: number, address: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/${id}/open?requesterAddress=${address}`, {
-      method: 'POST',
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error opening capsule:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets the full URL for an IPFS hash
- * @param hash - IPFS hash
- * @returns Full URL
- */
-export const getIPFSUrl = (hash: string) => {
-  return `${IPFS_GATEWAY}${hash}`;
-};
-
-/**
- * Gets popular capsules
- * @param limit - Maximum number of capsules to return
- * @returns List of popular capsules
- */
-export const getPopularCapsules = async (limit: number = 10) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/explore/popular?limit=${limit}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting popular capsules:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets featured capsules
- * @returns List of featured capsules
- */
-export const getFeaturedCapsules = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/explore/featured`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting featured capsules:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets recently opened capsules
- * @param limit - Maximum number of capsules to return
- * @returns List of recently opened capsules
- */
-export const getRecentlyOpenedCapsules = async (limit: number = 10) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/explore/recent?limit=${limit}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting recently opened capsules:", error);
-    throw error;
-  }
-};
-
-/**
- * Gets most subscribed capsules
- * @param limit - Maximum number of capsules to return
- * @returns List of most subscribed capsules
- */
-export const getMostSubscribedCapsules = async (limit: number = 10) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/explore/subscribed?limit=${limit}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error getting most subscribed capsules:", error);
-    throw error;
-  }
-};
-
-/**
- * Increment view count for a capsule
- * @param id - Capsule ID
- * @returns Updated capsule
- */
-export const incrementViewCount = async (id: number) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/${id}/view`, {
-      method: 'POST',
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error incrementing view count:", error);
-    // Don't throw error to avoid disrupting user experience
-    return null;
-  }
-};
-
-/**
- * Increment share count for a capsule
- * @param id - Capsule ID
- * @returns Updated capsule
- */
-export const incrementShareCount = async (id: number) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/${id}/share`, {
-      method: 'POST',
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error incrementing share count:", error);
-    // Don't throw error to avoid disrupting user experience
-    return null;
-  }
-};
-
-/**
- * Subscribe to a capsule
- * @param id - Capsule ID
- * @param userAddress - User's blockchain address
- * @returns Updated capsule
- */
-export const subscribeToCapsule = async (id: number, userAddress: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/capsules/${id}/subscribe?userAddress=${userAddress}`, {
-      method: 'POST',
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error subscribing to capsule:", error);
-    throw error;
-  }
+  const receipt = await tx.wait();
+  const event   = receipt.events?.find((e: any) => e.event === 'CapsuleCreated');
+  if (!event) throw new Error('Capsule creation event not found');
+  return event.args.capsuleId.toString();
 };

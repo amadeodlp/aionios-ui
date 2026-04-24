@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.1",
+    "@supabase/supabase-js": "^2.104.1",
     "@web3-react/core": "^8.2.3",
     "@web3-react/metamask": "^8.2.4",
     "ethers": "^6.8.1",

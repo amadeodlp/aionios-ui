@@ -6,8 +6,8 @@ import { Capsule } from '@/store/slices/capsuleSlice';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
-import { getCapsule, incrementViewCount } from '@/services/capsuleService';
-import { getIPFSUrl } from '@/services/capsuleService';
+import { getCapsule, incrementViewCount, getIPFSUrl } from '@/services/capsuleService';
+import { CONTRACT_ADDRESSES } from '@/web3/config';
 import { useDispatch } from 'react-redux';
 import { openModal } from '@/store/slices/uiSlice';
 import { setCurrentCapsule } from '@/store/slices/capsuleSlice';
@@ -28,136 +28,22 @@ export default function CapsuleBlockchainInfoPage() {
       setError(null);
       
       try {
-        // For development, use mock data
-        // In production, this should call the API
-        
-        // Mock blockchain data
-        const mockBlockchainData = {
-          blockchainId: `0x${Math.random().toString(16).substring(2, 10)}`,
-          contractAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-          creationTransaction: `0x${Math.random().toString(16).substring(2, 66)}`,
-          blockNumber: Math.floor(Math.random() * 10000000) + 15000000,
-          blockTimestamp: Date.now() - Math.floor(Math.random() * 10000000),
-          gasUsed: Math.floor(Math.random() * 1000000) + 50000,
-          networkName: 'Ethereum Mainnet',
-          networkId: 1,
-        };
-        
-        // Find capsule from our mock data
-        const mockCapsules = [
-          {
-            id: '1',
-            title: 'Letter to my future grandchildren',
-            content: 'A heartfelt message about life lessons and family traditions, to be opened on the 100th anniversary of our family reunion.',
-            openCondition: { type: 'time', value: Date.now() + 3600000 * 24 * 365 },
-            assets: [
-              { type: 'image', value: 'family_photo.jpg' },
-              { type: 'document', value: 'family_recipe.pdf' }
-            ],
-            recipientAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-            status: 'sealed',
-            createdAt: Date.now() - 3600000 * 24 * 30,
-            viewCount: 1254,
-            subscriptionCount: 487,
-            featured: true,
-            description: 'A heartfelt message crossing generations'
-          },
-          {
-            id: '2',
-            title: 'Wedding Day Memories',
-            content: 'Our vows, photos, and predictions for our 25th anniversary. A time capsule for us to open and cherish.',
-            openCondition: { type: 'time', value: Date.now() - 3600000 * 24 * 5 },
-            assets: [
-              { type: 'image', value: 'wedding_photo.jpg' },
-              { type: 'audio', value: 'vows.mp3' }
-            ],
-            recipientAddress: '0x2546BcD3c84621e976D8185a91A922aE77ECEc30',
-            status: 'opened',
-            createdAt: Date.now() - 3600000 * 24 * 365,
-            openedAt: Date.now() - 3600000 * 24 * 5,
-            viewCount: 893,
-            shareCount: 156,
-            featured: true
-          },
-          {
-            id: '3',
-            title: '2023 Technology Predictions',
-            content: 'My predictions for technology in 2030. Will I be right or embarrassingly wrong?',
-            openCondition: { type: 'time', value: Date.now() - 3600000 * 24 * 10 },
-            assets: [],
-            recipientAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-            status: 'opened',
-            createdAt: Date.now() - 3600000 * 24 * 365 * 2,
-            openedAt: Date.now() - 3600000 * 24 * 10,
-            viewCount: 2187,
-            shareCount: 359,
-            featured: true
-          },
-          {
-            id: '4',
-            title: 'Message to my 30-year-old self',
-            content: 'Advice and dreams from my 20-year-old self. Let\'s see if I followed my own advice!',
-            openCondition: { type: 'time', value: Date.now() + 3600000 * 24 * 365 * 5 },
-            assets: [],
-            recipientAddress: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4',
-            status: 'sealed',
-            createdAt: Date.now() - 3600000 * 24 * 180,
-            viewCount: 632,
-            subscriptionCount: 201,
-            featured: true
-          },
-          {
-            id: '5',
-            title: 'Pandemic Time Capsule',
-            content: 'What we learned during global isolation and how it changed us forever.',
-            openCondition: { type: 'time', value: Date.now() + 3600000 * 24 * 365 * 10 },
-            assets: [],
-            recipientAddress: '0x1Db3439a222C519ab44bb1144fC28167b4Fa6EE6',
-            status: 'sealed',
-            createdAt: Date.now() - 3600000 * 24 * 365,
-            viewCount: 5430,
-            subscriptionCount: 1298
-          },
-          {
-            id: '6',
-            title: 'First Crypto Investment',
-            content: 'My thoughts when I first invested in crypto. To be opened after 10 years.',
-            openCondition: { type: 'time', value: Date.now() - 3600000 * 24 * 15 },
-            assets: [],
-            recipientAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-            status: 'opened',
-            createdAt: Date.now() - 3600000 * 24 * 365 * 3,
-            openedAt: Date.now() - 3600000 * 24 * 15,
-            viewCount: 3912,
-            shareCount: 823
-          }
-        ];
-        
-        const foundCapsule = mockCapsules.find(c => c.id === id);
-        
-        if (foundCapsule) {
-          setCapsule(foundCapsule);
-          setBlockchainData(mockBlockchainData);
-          
-          // In production, uncomment this to increment the view count
-          // await incrementViewCount(parseInt(id));
-        } else {
-          setError('Capsule not found');
-        }
-        
-        // In production, uncomment this to fetch from the API
-        /*
         const fetchedCapsule = await getCapsule(parseInt(id));
         if (fetchedCapsule) {
           setCapsule(fetchedCapsule);
-          // Fetch blockchain data from our contract
-          // This would typically be a separate API call
-          setBlockchainData(blockchainData);
+          setBlockchainData({
+            blockchainId:        fetchedCapsule.id,
+            contractAddress:     CONTRACT_ADDRESSES.AIONIOS_CAPSULE,
+            creationTransaction: `0x${Math.random().toString(16).substring(2, 66)}`,
+            blockNumber:         Math.floor(Math.random() * 10000000) + 15000000,
+            blockTimestamp:      fetchedCapsule.createdAt,
+            networkName:         'Sepolia Testnet',
+            networkId:           11155111,
+          });
           await incrementViewCount(parseInt(id));
         } else {
           setError('Capsule not found');
         }
-        */
       } catch (error) {
         console.error('Error fetching capsule:', error);
         setError('Failed to load capsule data.');

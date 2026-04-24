@@ -24,128 +24,14 @@ export default function ExplorePage() {
   const [category, setCategory] = useState('featured');
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch different categories of capsules
   useEffect(() => {
     const fetchExploreCapsules = async () => {
       dispatch(setExploreLoading(true));
       dispatch(setExploreError(null));
       setIsLoading(true);
-      
-      // Define mock data for development
-      const mockFeatured = [
-        {
-          id: '1',
-          title: 'Letter to my future grandchildren',
-          content: 'A heartfelt message about life lessons and family traditions, to be opened on the 100th anniversary of our family reunion.',
-          openCondition: { type: 'time', value: Date.now() + 3600000 * 24 * 365 },
-          assets: [],
-          recipientAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-          status: 'sealed',
-          createdAt: Date.now() - 3600000 * 24 * 30,
-          viewCount: 1254,
-          subscriptionCount: 487,
-          featured: true,
-          description: 'A heartfelt message crossing generations'
-        },
-        {
-          id: '2',
-          title: 'Wedding Day Memories',
-          content: 'Our vows, photos, and predictions for our 25th anniversary. A time capsule for us to open and cherish.',
-          openCondition: { type: 'time', value: Date.now() - 3600000 * 24 * 5 },
-          assets: [],
-          recipientAddress: '0x2546BcD3c84621e976D8185a91A922aE77ECEc30',
-          status: 'opened',
-          createdAt: Date.now() - 3600000 * 24 * 365,
-          openedAt: Date.now() - 3600000 * 24 * 5,
-          viewCount: 893,
-          shareCount: 156,
-          featured: true
-        },
-        {
-          id: '3',
-          title: '2023 Technology Predictions',
-          content: 'My predictions for technology in 2030. Will I be right or embarrassingly wrong?',
-          openCondition: { type: 'time', value: Date.now() - 3600000 * 24 * 10 },
-          assets: [],
-          recipientAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-          status: 'opened',
-          createdAt: Date.now() - 3600000 * 24 * 365 * 2,
-          openedAt: Date.now() - 3600000 * 24 * 10,
-          viewCount: 2187,
-          shareCount: 359,
-          featured: true
-        },
-        {
-          id: '4',
-          title: 'Message to my 30-year-old self',
-          content: 'Advice and dreams from my 20-year-old self. Let\'s see if I followed my own advice!',
-          openCondition: { type: 'time', value: Date.now() + 3600000 * 24 * 365 * 5 },
-          assets: [],
-          recipientAddress: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4',
-          status: 'sealed',
-          createdAt: Date.now() - 3600000 * 24 * 180,
-          viewCount: 632,
-          subscriptionCount: 201,
-          featured: true
-        },
-      ];
-      
-      const mockPopular = [
-        ...mockFeatured,
-        {
-          id: '5',
-          title: 'Pandemic Time Capsule',
-          content: 'What we learned during global isolation and how it changed us forever.',
-          openCondition: { type: 'time', value: Date.now() + 3600000 * 24 * 365 * 10 },
-          assets: [],
-          recipientAddress: '0x1Db3439a222C519ab44bb1144fC28167b4Fa6EE6',
-          status: 'sealed',
-          createdAt: Date.now() - 3600000 * 24 * 365,
-          viewCount: 5430,
-          subscriptionCount: 1298
-        },
-        {
-          id: '6',
-          title: 'First Crypto Investment',
-          content: 'My thoughts when I first invested in crypto. To be opened after 10 years.',
-          openCondition: { type: 'time', value: Date.now() - 3600000 * 24 * 15 },
-          assets: [],
-          recipientAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-          status: 'opened',
-          createdAt: Date.now() - 3600000 * 24 * 365 * 3,
-          openedAt: Date.now() - 3600000 * 24 * 15,
-          viewCount: 3912,
-          shareCount: 823
-        }
-      ];
-      
-      // Use mock data during development (comment this out when backend is ready)
-      let fetchedCapsules: Capsule[] = [];
-      switch (category) {
-        case 'featured':
-          fetchedCapsules = mockFeatured;
-          break;
-        case 'popular':
-          fetchedCapsules = mockPopular.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
-          break;
-        case 'recent':
-          fetchedCapsules = mockPopular
-            .filter(c => c.status === 'opened' && c.openedAt)
-            .sort((a, b) => (b.openedAt || 0) - (a.openedAt || 0));
-          break;
-        case 'subscribed':
-          fetchedCapsules = mockPopular
-            .filter(c => c.status === 'sealed')
-            .sort((a, b) => (b.subscriptionCount || 0) - (a.subscriptionCount || 0));
-          break;
-        default:
-          fetchedCapsules = mockFeatured;
-      }
 
-      // Uncomment this block when backend implementation is ready
-      /* 
       try {
-        // Fetch capsules based on selected category
+        let fetchedCapsules: Capsule[] = [];
         switch (category) {
           case 'featured':
             fetchedCapsules = await getFeaturedCapsules();
@@ -162,22 +48,16 @@ export default function ExplorePage() {
           default:
             fetchedCapsules = await getFeaturedCapsules();
         }
-        
-        // If no fetched capsules, use mock data
-        if (fetchedCapsules.length === 0) {
-          // Use mock data as defined above
-        }
+        dispatch(setExploreCapsules(fetchedCapsules));
       } catch (error) {
         console.error('Error fetching capsules:', error);
         dispatch(setExploreError('Failed to fetch capsules. Please try again later.'));
+      } finally {
+        dispatch(setExploreLoading(false));
+        setIsLoading(false);
       }
-      */
-      
-      dispatch(setExploreCapsules(fetchedCapsules));
-      dispatch(setExploreLoading(false));
-      setIsLoading(false);
     };
-    
+
     fetchExploreCapsules();
   }, [category, dispatch]);
   
