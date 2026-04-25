@@ -31,7 +31,7 @@ Next.js 14 (App Router), React 18, TypeScript, Redux Toolkit, Tailwind CSS, ethe
 
 ## Known incomplete areas — prioritize these
 
-- Wallet connect/disconnect flow — verify the connect button actually triggers MetaMask and handles errors
 - Capsule creation form — check that the unlock date picker is wired and form submission calls the smart contract
 - Explore page — verify it fetches real capsules from chain/Supabase, not mock data
 - Individual capsule page — check that "Open Capsule" / "View Contents" respects the unlock date and calls the contract
+- ConditionsStep DatePicker — `selectsRange` prop is set but the handler only sets a single date; range mode passes `[Date, Date]` to onChange which silently does nothing
