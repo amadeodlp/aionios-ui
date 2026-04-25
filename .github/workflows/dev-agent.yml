@@ -42,9 +42,7 @@ jobs:
       - name: Run dev agent
         run: node _infra/dev-agent.js
         env:
-          AGENT_PROVIDER: ${{ secrets.AGENT_PROVIDER }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           AGENT_REPO_PATH: ${{ github.workspace }}
           DEV_AGENT_AUTO_MERGE: 'true'
