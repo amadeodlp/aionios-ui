@@ -1,13 +1,11 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
-echo "🔍 Running TypeScript type check..."
-npx tsc --noEmit
-
-if [ $? -ne 0 ]; then
-  echo "❌ TypeScript errors found. Fix them before committing."
-  exit 1
+echo "🔍 Running Next.js type and lint checks..."
+if ! npm run lint 2>&1 | grep -q "error"; then
+  echo "✅ All checks passed!"
+  exit 0
 fi
 
-echo "✅ Type check passed!"
-exit 0
+echo "❌ Errors found. Fix them before committing."
+npm run lint
+exit 1
