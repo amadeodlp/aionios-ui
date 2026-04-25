@@ -1,11 +1,10 @@
 #!/bin/sh
 
 echo "🔍 Running Next.js type and lint checks..."
-if ! npm run lint 2>&1 | grep -q "error"; then
-  echo "✅ All checks passed!"
-  exit 0
+if ! npm run lint 2>&1; then
+  echo "❌ Type or lint errors found. Fix them before committing."
+  exit 1
 fi
 
-echo "❌ Errors found. Fix them before committing."
-npm run lint
-exit 1
+echo "✅ All checks passed!"
+exit 0
