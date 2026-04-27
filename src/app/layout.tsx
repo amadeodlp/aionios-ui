@@ -18,6 +18,9 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'AIONIOS | Blockchain Time Capsule',
   description: 'Store messages, assets, and memories on the blockchain to be revealed in the future',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

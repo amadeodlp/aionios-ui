@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- AIONIOS: hourglass / time lock on dark background -->
+  <rect width="32" height="32" rx="4" fill="#050510"/>
+  <!-- Hourglass outline -->
+  <path d="M9 4 L23 4 L23 5.5 L17.5 13 L17.5 19 L23 26.5 L23 28 L9 28 L9 26.5 L14.5 19 L14.5 13 L9 5.5 Z" fill="none" stroke="#6366f1" stroke-width="1.2"/>
+  <!-- Sand top -->
+  <path d="M10.5 5.5 L21.5 5.5 L17 12 L15 12 Z" fill="#6366f1" opacity="0.4"/>
+  <!-- Sand bottom accumulating -->
+  <path d="M13 22 L19 22 L21.5 26.5 L10.5 26.5 Z" fill="#6366f1" opacity="0.8"/>
+  <!-- Center dot -->
+  <circle cx="16" cy="15.5" r="1.2" fill="#a5b4fc"/>
+</svg>
