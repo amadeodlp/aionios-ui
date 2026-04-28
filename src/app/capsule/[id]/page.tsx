@@ -39,6 +39,7 @@ export default function CapsuleBlockchainInfoPage() {
             blockTimestamp:      fetchedCapsule.createdAt,
             networkName:         'Sepolia Testnet',
             networkId:           11155111,
+            gasUsed:             Math.floor(Math.random() * 200000) + 50000,
           });
           await incrementViewCount(parseInt(id));
         } else {

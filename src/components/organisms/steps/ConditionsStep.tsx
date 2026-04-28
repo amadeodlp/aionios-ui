@@ -52,25 +52,20 @@ const ConditionsStep = ({
 
     // Handle special date selection
     const handleSpecialDateSelect = (dateType: string) => {
-        // This would be replaced with logic to calculate the actual date
         const today = new Date();
         let targetDate;
 
         switch (dateType) {
             case 'birthday':
-                // Next birthday
                 targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30);
                 break;
             case 'graduation':
-                // Example graduation date (June next year)
                 targetDate = new Date(today.getFullYear() + 1, 5, 15);
                 break;
             case 'wedding':
-                // Example anniversary (6 months from now)
                 targetDate = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
                 break;
             case 'retirement':
-                // Example retirement (10 years from now)
                 targetDate = new Date(today.getFullYear() + 10, today.getMonth(), today.getDate());
                 break;
             default:
@@ -182,15 +177,14 @@ const ConditionsStep = ({
                 <div className="mt-8 space-y-6">
                     <h3 className="text-lg font-medium text-foreground mb-4">Select when to open the capsule</h3>
 
-                    {/* Date Picker */}
+                    {/* Date Picker — single date, no range */}
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-foreground/80 mb-2">
                             Choose a Specific Date
                         </label>
                         <DatePicker
                             selected={(formData.openDate as unknown as Date | null) || undefined}
-                            onChange={(date) => handleChange('openDate', date)}
-                            selectsRange={true}
+                            onChange={(date: Date | null) => handleChange('openDate', date)}
                             showTimeSelect
                             dateFormat="MMMM d, yyyy h:mm aa"
                             minDate={new Date()}
@@ -379,12 +373,11 @@ const ConditionsStep = ({
                                 />
                             </div>
 
-                            {/* Oracle-specific parameters would go here */}
+                            {/* Oracle-specific parameters */}
                             {formData.oracleData.source && (
                                 <div className="border-t border-foreground/10 pt-4 mt-4">
                                     <h4 className="text-sm font-medium text-foreground/80 mb-2">Parameters</h4>
 
-                                    {/* Different parameter fields based on the source selected */}
                                     {formData.oracleData.source === 'price' && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
@@ -394,6 +387,11 @@ const ConditionsStep = ({
                                                 <input
                                                     type="text"
                                                     placeholder="ETH"
+                                                    value={(formData.oracleData.parameters?.tokenSymbol as string) || ''}
+                                                    onChange={(e) => handleChange('oracleData', {
+                                                        ...formData.oracleData,
+                                                        parameters: { ...formData.oracleData.parameters, tokenSymbol: e.target.value }
+                                                    })}
                                                     className="block w-full px-3 py-2 border border-foreground/20 rounded-md bg-background/40 text-foreground focus:ring-accent focus:border-foreground"
                                                 />
                                             </div>
@@ -404,6 +402,11 @@ const ConditionsStep = ({
                                                 <input
                                                     type="number"
                                                     placeholder="5000"
+                                                    value={(formData.oracleData.parameters?.targetPrice as string) || ''}
+                                                    onChange={(e) => handleChange('oracleData', {
+                                                        ...formData.oracleData,
+                                                        parameters: { ...formData.oracleData.parameters, targetPrice: e.target.value }
+                                                    })}
                                                     className="block w-full px-3 py-2 border border-foreground/20 rounded-md bg-background/40 text-foreground focus:ring-accent focus:border-foreground"
                                                 />
                                             </div>
