@@ -114,7 +114,7 @@ const Header: React.FC = () => {
               {isConnected && address ? (
                 <div className="flex flex-col space-y-2">
                   <span className="font-mono text-sm">{formatAddress(address)}</span>
-                  <Button size="sm" onClick={() => dispatch(setSidebar(true))}>
+                  <Button size="sm" href="/dashboard">
                     Dashboard
                   </Button>
                   <Button size="sm" variant="secondary" onClick={handleDisconnect}>
